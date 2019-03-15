@@ -1,0 +1,101 @@
+---
+################################################################################
+#
+#   Section: Organizations
+#
+################################################################################
+Organizations:
+
+    - &OrdererOrg
+
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/cttransf.com/msp
+
+    - &DealerOrg
+
+        Name: DealerMSP
+        ID: DealerMSP
+        MSPDir: crypto-config/peerOrganizations/dealer.com/msp
+        AnchorPeers:
+            - Host: peer0.dealer.com
+              Port: 7151
+
+    - &InsurerOrg
+        Name: InsurerMSP
+        ID: InsurerMSP
+        MSPDir: crypto-config/peerOrganizations/insurer.com/msp
+        AnchorPeers:
+            - Host: peer0.insurer.com
+              Port: 7351
+
+    - &RegistryOrg
+        Name: RegistryMSP
+        ID: RegistryMSP
+        MSPDir: crypto-config/peerOrganizations/registry.com/msp
+        AnchorPeers:
+            - Host: peer0.registry.com
+              Port: 7551
+
+################################################################################
+#
+#   SECTION: Application
+#
+################################################################################
+Application: &ApplicationDefaults
+
+    Organizations:
+
+################################################################################
+#
+#   SECTION: Orderer
+#
+################################################################################
+Orderer: &OrdererDefaults
+
+    OrdererType: kafka
+    Addresses:
+        - orderer0.cttransf.com:7050
+        - orderer1.cttransf.com:7150
+        - orderer2.cttransf.com:7250
+
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+    Kafka:
+        Brokers:
+            - 127.0.0.1:9092
+            - 127.0.0.1:9092
+            - 127.0.0.1:9092
+
+    Organizations:
+
+################################################################################
+#
+#   Profile
+#
+################################################################################
+Profiles:
+
+    OneOrgOrdererGenesis:
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *DealerOrg
+                    - *InsurerOrg
+                    - *RegistryOrg
+    OneOrgChannel:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *DealerOrg
+                - *InsurerOrg
+                - *RegistryOrg
