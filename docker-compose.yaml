@@ -3,33 +3,230 @@ version: '2'
 networks:
   basic:
 
+volumes:
+  ca-org1.dealer.com:
+  ca-org2.insurer.com:
+  ca-org3.registry.com:
+  orderer0.cttransf.com:
+  orderer1.cttransf.com:
+  orderer2.cttransf.com:
+  peer0.dealer.com:
+  peer1.dealer.com:
+  peer0.insurer.com:
+  peer1.insurer.com:
+  peer0.registry.com:
+  peer1.registry.com:
+
+
 services:
 
-  cliFabric:
-    container_name: cliFabric
-    image: hyperledger/fabric-tools:$IMAGE_VERSION
-    tty: true
+###########
+#   CAs   #
+###########
+
+  ca-org1.dealer.com:
+    container_name: ca-org1.dealer.com
+    extends:
+      file:    network-config/ca.config.yaml
+      service: ca-org1.dealer.com
+    networks: 
+      - basic
+
+  ca-org2.insurer.com:
+    container_name: ca-org2.insurer.com
+    extends:
+      file:    network-config/ca.config.yaml
+      service: ca-org2.insurer.com
+    networks: 
+      - basic
+
+  ca-org3.registry.com:
+    container_name: ca-org3.registry.com
+    extends:
+      file:    network-config/ca.config.yaml
+      service: ca-org3.registry.com
+    networks: 
+      - basic
+
+################
+#   Orderers   #
+################
+
+  orderer0.cttransf.com:
+    container_name: orderer0.cttransf.com
+    extends:
+      file:    network-config/orderer.config.yaml
+      service: orderer0.cttransf.com
+    networks:
+      - basic
+
+  orderer1.cttransf.com:
+    container_name: orderer1.cttransf.com
+    extends:
+      file:    network-config/orderer.config.yaml
+      service: orderer1.cttransf.com
+    networks:
+      - basic
+
+  orderer2.cttransf.com:
+    container_name: orderer2.cttransf.com
+    extends:
+      file:    network-config/orderer.config.yaml
+      service: orderer2.cttransf.com
+    networks:
+      - basic
+
+################
+#     Peers    #
+################
+#  Dealer  #
+############
+  peer0.dealer.com:
+    container_name: peer0.dealer.com
+    extends:
+      file:    network-config/dealer-peer.config.yaml
+      service: peer0.dealer.com
+    networks:
+      - basic
+
+  peer1.dealer.com:
+    container_name: peer1.dealer.com
+    extends:
+      file:    network-config/dealer-peer.config.yaml
+      service: peer1.dealer.com
+    networks:
+      - basic
+
+  couch0.dealer.com:
+    container_name: couch0.dealer.com
+    extends: 
+      file:    network-config/dealer-peer.config.yaml
+      service: couch0.dealer.com
+    networks:
+      - basic
+
+  couch1.dealer.com:
+    container_name: couch1.dealer.com
+    extends: 
+      file:    network-config/dealer-peer.config.yaml
+      service: couch1.dealer.com
+    networks:
+      - basic
+
+#############
+#  Insurer  #
+#############
+  peer0.insurer.com:
+    container_name: peer0.insurer.com
+    extends:
+      file:    network-config/insurer-peer.config.yaml
+      service: peer0.insurer.com
+    networks:
+      - basic
+
+  peer1.insurer.com:
+    container_name: peer1.insurer.com
+    extends:
+      file:    network-config/insurer-peer.config.yaml
+      service: peer1.insurer.com
+    networks:
+      - basic
+
+  couch0.insurer.com:
+    container_name: couch0.insurer.com
+    extends: 
+      file:    network-config/insurer-peer.config.yaml
+      service: couch0.insurer.com
+    networks:
+      - basic
+
+  couch1.insurer.com:
+    container_name: couch1.insurer.com
+    extends: 
+      file:    network-config/insurer-peer.config.yaml
+      service: couch1.insurer.com
+    networks:
+      - basic
+
+##############
+#  Registry  #
+##############
+  peer0.registry.com:
+    container_name: peer0.registry.com
+    extends:
+      file:    network-config/registry-peer.config.yaml
+      service: peer0.registry.com
+    networks:
+      - basic
+
+  peer1.registry.com:
+    container_name: peer1.registry.com
+    extends:
+      file:    network-config/registry-peer.config.yaml
+      service: peer1.registry.com
+    networks:
+      - basic
+
+  couch0.registry.com:
+    container_name: couch0.registry.com
+    extends: 
+      file:    network-config/registry-peer.config.yaml
+      service: couch0.registry.com
+    networks:
+      - basic
+
+  couch1.registry.com:
+    container_name: couch1.registry.com
+    extends: 
+      file:    network-config/registry-peer.config.yaml
+      service: couch1.registry.com
+    networks:
+      - basic
+
+############################################
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:$IMAGE_TAG
     command: /bin/bash
+    tty: true
+    stdin_open: true
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     environment:
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_ID=cli
-      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
-      - CORE_PEER_LOCALMSPID=Org1MSP
-      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
-      - CORE_CHAINCODE_KEEPALIVE=10
+      - CORE_PEER_ADDRESS=peer0.dealer.com:7151
+      - CORE_PEER_LOCALMSPID=DealerMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dealer.com/peers/peer0.dealer.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dealer.com/peers/peer0.dealer.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dealer.com/peers/peer0.dealer.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dealer.com/users/Admin@dealer.com/msp
     volumes:
-      - /var/run/:/host/var/run/
-      - ./../CTTransf-Chaincode:/opt/gopath/src/github.com/
-      - ./../gateway/:/opt/gopath/src/github.com/gateway/
-      - ./crypto-config/:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - /var/run/:/host/var/run/
+        - ./../CTTransf-Chaincode:/opt/gopath/src/github.com/
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ./artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/artifacts
     depends_on:
-      - orderer.example.com
-      - peer0.org1.example.com
-      - peer1.org1.example.com
-      - peer0.org2.example.com
-      - peer1.org2.example.com
+      - orderer0.cttransf.com
+      - orderer1.cttransf.com
+      - orderer2.cttransf.com
+      - ca-org1.dealer.com
+      - peer0.dealer.com
+      - peer1.dealer.com
+      - couch0.dealer.com
+      - couch1.dealer.com
+      - ca-org2.insurer.com
+      - peer0.insurer.com
+      - peer1.insurer.com
+      - couch0.insurer.com
+      - couch1.insurer.com
+      - ca-org3.registry.com
+      - peer0.registry.com
+      - peer1.registry.com
+      - couch0.registry.com
+      - couch1.registry.com
     networks:
-      - byfn
+      - basic
