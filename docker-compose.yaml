@@ -206,9 +206,10 @@ services:
       - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dealer.com/users/Admin@dealer.com/msp
     volumes:
         - /var/run/:/host/var/run/
-        - ./../CTTransf-Chaincode:/opt/gopath/src/github.com/
+        - ./../CTTransf-Chaincode:/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode
         - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
         - ./artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/artifacts
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts
     depends_on:
       - orderer0.cttransf.com
       - orderer1.cttransf.com

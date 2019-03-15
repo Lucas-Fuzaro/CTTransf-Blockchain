@@ -80,7 +80,7 @@ Orderer: &OrdererDefaults
 ################################################################################
 Profiles:
 
-    OneOrgOrdererGenesis:
+    ThreeOrgsOrdererGenesis:
         Orderer:
             <<: *OrdererDefaults
             Organizations:
@@ -91,7 +91,7 @@ Profiles:
                     - *DealerOrg
                     - *InsurerOrg
                     - *RegistryOrg
-    OneOrgChannel:
+    ThreeOrgsChannel:
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults

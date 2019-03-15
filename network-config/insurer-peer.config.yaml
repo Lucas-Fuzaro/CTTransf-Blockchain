@@ -4,7 +4,7 @@ services:
 
   peer0.insurer.com:
     container_name: peer0.insurer.com
-    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    image: hyperledger/fabric-peer:$FABRIC_VERSION
     command: peer node start
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     environment:
@@ -13,7 +13,7 @@ services:
       - CORE_LOGGING_PEER=info
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=InsurerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_MSPCONFIGPATH=/FABRIC-PEER/peer/msp
       - CORE_PEER_ADDRESS=peer0.insurer.com:7351
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -22,16 +22,17 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/insurer.com/peers/peer0.insurer.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/insurer.com/users:/etc/hyperledger/msp/users
-      - ./artifacts:/etc/hyperledger/configtx
+      - ./artifacts:/FABRIC-PEER/artifacts
+      - ./crypto-config/peerOrganizations/insurer.com/users:/FABRIC-PEER/users
+      - ./crypto-config/peerOrganizations/insurer.com/peers/peer0.insurer.com/msp:/FABRIC-PEER/peer/msp
+      - ./crypto-config/peerOrganizations/insurer.com/peers/peer0.insurer.com/tls:/FABRIC-PEER/peer/tls
     ports:
       - 7351:7351
       - 7353:7353
 
   peer1.insurer.com:
     container_name: peer1.insurer.com
-    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    image: hyperledger/fabric-peer:$FABRIC_VERSION
     command: peer node start
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     environment:
@@ -40,7 +41,7 @@ services:
       - CORE_LOGGING_PEER=info
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=InsurerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_MSPCONFIGPATH=/FABRIC-PEER/peer/msp
       - CORE_PEER_ADDRESS=peer1.insurer.com:7451
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -49,16 +50,17 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/insurer.com/peers/peer1.insurer.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/insurer.com/users:/etc/hyperledger/msp/users
-      - ./artifacts:/etc/hyperledger/configtx
+      - ./artifacts:/FABRIC-PEER/artifacts
+      - ./crypto-config/peerOrganizations/insurer.com/users:/FABRIC-PEER/users
+      - ./crypto-config/peerOrganizations/insurer.com/peers/peer1.insurer.com/msp:/FABRIC-PEER/peer/msp
+      - ./crypto-config/peerOrganizations/insurer.com/peers/peer1.insurer.com/tls:/FABRIC-PEER/peer/tls
     ports:
       - 7451:7451
       - 7453:7453
 
   couchdb0.insurer.com:
     container_name: couchdb0.insurer.com
-    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    image: hyperledger/fabric-couchdb:$SVC_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -67,7 +69,7 @@ services:
 
   couchdb1.insurer.com:
     container_name: couchdb1.insurer.com
-    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    image: hyperledger/fabric-couchdb:$SVC_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=

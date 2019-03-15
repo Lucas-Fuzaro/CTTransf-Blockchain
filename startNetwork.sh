@@ -1,61 +1,29 @@
+. scripts/crypto.sh
+. scripts/setupLogic.sh
+
 echo
 echo
 echo "o     Removing all pre-existing containers...     "
 echo
 echo
 docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
+if [ "$?" -ne 0 ]; then
+  echo "!!! No dockers running !!!"
+fi
 
 echo
 echo
 echo "o     Removing all pre-existing images...     "
 echo
 echo
-docker rmi $(docker images | grep 'peer0')
-
-echo
-echo
-echo "o     Recreating crypto material...     "
-echo
-echo
-# env NEEDED to create crypto material
-export PATH=$PATH:${PWD}/bin
-export FABRIC_CFG_PATH=${PWD}
-export CHANNEL_NAME=mychannel
-
-# Removing pre-existing crypto material
-rm -fr artifacts/*
-rm -fr crypto-config/
-
-# Generating Crypto Material
-cryptogen generate --config=./crypto-config.yaml
+docker rmi $(docker images)
 if [ "$?" -ne 0 ]; then
-  echo "Failed to generate crypto material..."
-  exit 1
+  echo "!!! No images found !!!"
 fi
+# | grep 'peer0'
 
-# Changing all keys names to key.pem
-for file in $(find ./crypto-config/ -iname *_sk); do dir=$(dirname $file); mv ${dir}/*_sk ${dir}/key.pem; done && find ./crypto-config/ -type d | xargs chmod a+rx && find ./crypto-config/ -type f | xargs chmod a+r
-
-# Generating Genesis Block for Orderer
-configtxgen -profile OneOrgOrdererGenesis -outputBlock ./artifacts/genesis.block
-if [ "$?" -ne 0 ]; then
-  echo "Failed to generate Genesis Block..."
-  exit 1
-fi
-
-# Generating Channel Configuration Transaction
-configtxgen -profile OneOrgChannel -outputCreateChannelTx ./artifacts/channel.tx -channelID $CHANNEL_NAME
-if [ "$?" -ne 0 ]; then
-  echo "Failed to generate channel configuration transaction..."
-  exit 1
-fi
-
-# Generating Anchor Peer Transaction
-configtxgen -profile OneOrgChannel -outputAnchorPeersUpdate ./artifacts/Org1MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org1MSP
-if [ "$?" -ne 0 ]; then
-  echo "Failed to generate Anchor Peer update for Org1MSP..."
-  exit 1
-fi
+# Calling crypto.sh to create Crypto Material
+createCrypto
 
 echo
 echo
@@ -63,23 +31,67 @@ echo "o     Restarting docker-compose network...     "
 echo
 echo
 docker-compose -f docker-compose.yaml down
+if [ "$?" -ne 0 ]; then
+  echo "!!! No running network !!!"
+fi
+echo
+echo
 docker-compose -f docker-compose.yaml up -d
-export FABRIC_START_TIMEOUT=20
+export FABRIC_START_TIMEOUT=50
 sleep ${FABRIC_START_TIMEOUT}
 
-echo
-echo
-echo "o     Creating Channel...     "
-echo
-echo
-docker exec -e "CORE_PEER_LOCALMSPID=Org1MSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" peer0.org1.example.com peer channel create -o orderer.example.com:7050 -c $CHANNEL_NAME -f /etc/hyperledger/configtx/channel.tx
+# Calling setupLogic.sh for Creating Channel
+docker exec cli ./scripts/setupLogic.sh
+
+
 
 echo
 echo
-echo "o     Joining Peer0.Org1 to Channel...     "
+echo "o     Joining peer0.dealer.com to Channel...     "
 echo
 echo
-docker exec -e "CORE_PEER_LOCALMSPID=Org1MSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" peer0.org1.example.com peer channel join -b mychannel.block
+docker exec -e "CORE_PEER_LOCALMSPID=DealerMSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@dealer.com/msp" peer0.dealer.com peer channel join -b mychannel.block
+verifyResult "$?" "!!! Failed to join peer0.dealer.com !!!"
+
+echo
+echo
+echo "o     Joining peer1.dealer.com to Channel...     "
+echo
+echo
+docker exec -e "CORE_PEER_LOCALMSPID=DealerMSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@dealer.com/msp" peer1.dealer.com peer channel join -b mychannel.block
+verifyResult "$?" "!!! Failed to join peer1.dealer.com !!!"
+
+echo
+echo
+echo "o     Joining peer0.insurer.com to Channel...     "
+echo
+echo
+docker exec -e "CORE_PEER_LOCALMSPID=InsurerMSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@insurer.com/msp" peer0.insurer.com peer channel join -b mychannel.block
+verifyResult "$?" "!!! Failed to join peer0.insurer.com !!!"
+
+echo
+echo
+echo "o     Joining peer1.insurer.com to Channel...     "
+echo
+echo
+docker exec -e "CORE_PEER_LOCALMSPID=InsurerMSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@insurer.com/msp" peer1.insurer.com peer channel join -b mychannel.block
+verifyResult "$?" "!!! Failed to join peer1.insurer.com !!!"
+
+echo
+echo
+echo "o     Joining peer0.registry.com to Channel...     "
+echo
+echo
+docker exec -e "CORE_PEER_LOCALMSPID=RegistryMSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@registry.com/msp" peer0.registry.com peer channel join -b mychannel.block
+verifyResult "$?" "!!! Failed to join peer0.registry.com !!!"
+
+echo
+echo
+echo "o     Joining peer1.registry.com to Channel...     "
+echo
+echo
+docker exec -e "CORE_PEER_LOCALMSPID=RegistryMSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@registry.com/msp" peer1.registry.com peer channel join -b mychannel.block
+verifyResult "$?" "!!! Failed to join peer1.registry.com !!!"
 
 echo
 echo

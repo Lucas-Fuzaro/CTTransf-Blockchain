@@ -4,7 +4,7 @@ services:
 
   peer0.dealer.com:
     container_name: peer0.dealer.com
-    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    image: hyperledger/fabric-peer:$FABRIC_VERSION
     command: peer node start
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     environment:
@@ -13,7 +13,7 @@ services:
       - CORE_LOGGING_PEER=info
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=DealerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_MSPCONFIGPATH=/FABRIC-PEER/peer/msp
       - CORE_PEER_ADDRESS=peer0.dealer.com:7151
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -22,16 +22,17 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/dealer.com/peers/peer0.dealer.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/dealer.com/users:/etc/hyperledger/msp/users
-      - ./artifacts:/etc/hyperledger/configtx
+      - ./artifacts:/FABRIC-PEER/artifacts
+      - ./crypto-config/peerOrganizations/dealer.com/users:/FABRIC-PEER/users
+      - ./crypto-config/peerOrganizations/dealer.com/peers/peer0.dealer.com/msp:/FABRIC-PEER/peer/msp
+      - ./crypto-config/peerOrganizations/dealer.com/peers/peer0.dealer.com/tls:/FABRIC-PEER/peer/tls
     ports:
       - 7151:7151
       - 7153:7153
 
   peer1.dealer.com:
     container_name: peer1.dealer.com
-    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    image: hyperledger/fabric-peer:$FABRIC_VERSION
     command: peer node start
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     environment:
@@ -40,7 +41,7 @@ services:
       - CORE_LOGGING_PEER=info
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=DealerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_MSPCONFIGPATH=/FABRIC-PEER/peer/msp
       - CORE_PEER_ADDRESS=peer1.dealer.com:7251
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -49,16 +50,17 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/dealer.com/peers/peer1.dealer.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/dealer.com/users:/etc/hyperledger/msp/users
-      - ./artifacts:/etc/hyperledger/configtx
+      - ./artifacts:/FABRIC-PEER/artifacts
+      - ./crypto-config/peerOrganizations/dealer.com/users:/FABRIC-PEER/users
+      - ./crypto-config/peerOrganizations/dealer.com/peers/peer1.dealer.com/msp:/FABRIC-PEER/peer/msp
+      - ./crypto-config/peerOrganizations/dealer.com/peers/peer1.dealer.com/tls:/FABRIC-PEER/peer/tls
     ports:
       - 7251:7251
       - 7253:7253
 
   couchdb0.dealer.com:
     container_name: couchdb0.dealer.com
-    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    image: hyperledger/fabric-couchdb:$SVC_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -67,7 +69,7 @@ services:
 
   couchdb1.dealer.com:
     container_name: couchdb1.dealer.com
-    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    image: hyperledger/fabric-couchdb:$SVC_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=

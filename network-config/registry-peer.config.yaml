@@ -4,7 +4,7 @@ services:
 
   peer0.registry.com:
     container_name: peer0.registry.com
-    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    image: hyperledger/fabric-peer:$FABRIC_VERSION
     command: peer node start
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     environment:
@@ -13,7 +13,7 @@ services:
       - CORE_LOGGING_PEER=info
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=RegistryMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_MSPCONFIGPATH=/FABRIC-PEER/peer/msp
       - CORE_PEER_ADDRESS=peer0.registry.com:7551
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -22,16 +22,17 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/registry.com/peers/peer0.registry.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/registry.com/users:/etc/hyperledger/msp/users
-      - ./artifacts:/etc/hyperledger/configtx
+      - ./artifacts:/FABRIC-PEER/artifacts
+      - ./crypto-config/peerOrganizations/registry.com/users:/FABRIC-PEER/users
+      - ./crypto-config/peerOrganizations/registry.com/peers/peer0.registry.com/msp:/FABRIC-PEER/peer/msp
+      - ./crypto-config/peerOrganizations/registry.com/peers/peer0.registry.com/tls:/FABRIC-PEER/peer/tls
     ports:
       - 7551:7551
       - 7553:7553
 
   peer1.registry.com:
     container_name: peer1.registry.com
-    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    image: hyperledger/fabric-peer:$FABRIC_VERSION
     command: peer node start
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     environment:
@@ -40,7 +41,7 @@ services:
       - CORE_LOGGING_PEER=info
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=RegistryMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_MSPCONFIGPATH=/FABRIC-PEER/peer/msp
       - CORE_PEER_ADDRESS=peer1.registry.com:7651
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -49,16 +50,17 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/registry.com/peers/peer1.registry.com/msp:/etc/hyperledger/msp/peer
-      - ./crypto-config/peerOrganizations/registry.com/users:/etc/hyperledger/msp/users
-      - ./artifacts:/etc/hyperledger/configtx
+      - ./artifacts:/FABRIC-PEER/artifacts
+      - ./crypto-config/peerOrganizations/registry.com/users:/FABRIC-PEER/users
+      - ./crypto-config/peerOrganizations/registry.com/peers/peer1.registry.com/msp:/FABRIC-PEER/peer/msp
+      - ./crypto-config/peerOrganizations/registry.com/peers/peer1.registry.com/tls:/FABRIC-PEER/peer/tls
     ports:
       - 7651:7651
       - 7653:7653
 
   couchdb0.registry.com:
     container_name: couchdb0.registry.com
-    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    image: hyperledger/fabric-couchdb:$SVC_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -67,7 +69,7 @@ services:
 
   couchdb1.registry.com:
     container_name: couchdb1.registry.com
-    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    image: hyperledger/fabric-couchdb:$SVC_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
