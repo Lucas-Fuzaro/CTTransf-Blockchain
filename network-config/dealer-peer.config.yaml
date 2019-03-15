@@ -14,7 +14,7 @@ services:
       - CORE_CHAINCODE_LOGGING_LEVEL=info
       - CORE_PEER_LOCALMSPID=DealerMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
-      - CORE_PEER_ADDRESS=peer0.dealer.com:7051
+      - CORE_PEER_ADDRESS=peer0.dealer.com:7151
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
@@ -29,15 +29,47 @@ services:
       - 7151:7151
       - 7153:7153
 
-  couchdb:
-    container_name: couchdb
-    image: hyperledger/fabric-couchdb
-    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
-    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+  peer1.dealer.com:
+    container_name: peer1.dealer.com
+    image: hyperledger/fabric-peer:$IMAGE_VERSION
+    command: peer node start
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.dealer.com
+      - CORE_LOGGING_PEER=info
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+      - CORE_PEER_LOCALMSPID=DealerMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+      - CORE_PEER_ADDRESS=peer1.dealer.com:7251
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5985
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/dealer.com/peers/peer1.dealer.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/dealer.com/users:/etc/hyperledger/msp/users
+      - ./artifacts:/etc/hyperledger/configtx
+    ports:
+      - 7251:7251
+      - 7253:7253
+
+  couchdb0.dealer.com:
+    container_name: couchdb0.dealer.com
+    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
     ports:
       - 5984:5984
-    networks:
-      - basic
+
+  couchdb1.dealer.com:
+    container_name: couchdb1.dealer.com
+    image: hyperledger/fabric-couchdb:$IMAGE_VERSION
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - 5985:5985
